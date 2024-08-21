@@ -1,0 +1,10 @@
+| Given | When | Then |
+|-------|------|------|
+| The system is operational and the endpoint is accessible | A GET request is made to /sign/failedesl/reason | - Response status code is 200<br>- Response body contains a non-empty list of ESL failure reasons<br>- Each reason in the list has a unique identifier and a descriptive text |
+| The system is operational but no failure reasons are configured | A GET request is made to /sign/failedesl/reason | - Response status code is 200<br>- Response body contains an empty list |
+| The system is experiencing high load | A GET request is made to /sign/failedesl/reason | - Response status code is 200<br>- Response body contains the list of ESL failure reasons<br>- Response time is within acceptable limits |
+| The user does not have proper authentication | A GET request is made to /sign/failedesl/reason without proper authentication | - Response status code is 401 (Unauthorized)<br>- Response body contains an error message about lacking proper authentication |
+| The user does not have proper authorization | An authenticated GET request is made to /sign/failedesl/reason without proper authorization | - Response status code is 403 (Forbidden)<br>- Response body contains an error message about lacking proper authorization |
+| The endpoint is temporarily unavailable | A GET request is made to /sign/failedesl/reason during maintenance | - Response status code is 503 (Service Unavailable)<br>- Response body contains a message about temporary unavailability |
+| Multiple concurrent requests are made | Multiple simultaneous GET requests are made to /sign/failedesl/reason | - All requests receive a 200 status code<br>- All responses contain the same list of ESL failure reasons<br>- The system handles the concurrent requests without errors |
+| A request is made with an unsupported HTTP method | A POST request is made to /sign/failedesl/reason | - Response status code is 405 (Method Not Allowed)<br>- Response body contains an error message about unsupported HTTP method |

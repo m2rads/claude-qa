@@ -1,0 +1,11 @@
+| Given | When | Then |
+|-------|------|------|
+| A valid store ID (123) with multiple failing ESLs | A GET request is made to /sign/failedesl/{store} | - Response status code is 200<br>- Response body contains a non-empty list of failing ESLs<br>- Each ESL in the list has relevant failure information (e.g., ESL ID, failure reason, timestamp) |
+| A valid store ID (123) with no failing ESLs | A GET request is made to /sign/failedesl/{store} | - Response status code is 200<br>- Response body contains an empty list |
+| An invalid store ID (-1) | A GET request is made to /sign/failedesl/-1 | - Response status code is 400<br>- Response body contains an error message about invalid store ID |
+| A non-existent store ID (999) | A GET request is made to /sign/failedesl/999 | - Response status code is 404<br>- Response body contains an error message about non-existent store |
+| A valid store ID (123) but the system is experiencing high load | A GET request is made to /sign/failedesl/{store} | - Response status code is 200<br>- Response body contains the list of failing ESLs<br>- Response time is within acceptable limits |
+| A valid store ID (123) with a large number of failing ESLs | A GET request is made to /sign/failedesl/{store} | - Response status code is 200<br>- Response body contains a complete list of all failing ESLs<br>- The response is paginated if the number of failing ESLs exceeds a certain threshold |
+| The user does not have proper authentication | A GET request is made to /sign/failedesl/{store} without proper authentication | - Response status code is 401 (Unauthorized)<br>- Response body contains an error message about lacking proper authentication |
+| The user does not have proper authorization for the specified store | An authenticated GET request is made to /sign/failedesl/{store} without proper authorization | - Response status code is 403 (Forbidden)<br>- Response body contains an error message about lacking proper authorization |
+| A valid store ID (0), if 0 is used to represent all stores | A GET request is made to /sign/failedesl/0 | - Response status code is 200<br>- Response body contains a list of failing ESLs across all stores<br>- Each ESL entry includes the store ID it belongs to |

@@ -1,0 +1,12 @@
+| Given | When | Then |
+|-------|------|------|
+| A valid store ID (123) with more than 100 devices | A GET request is made to /GetDsDeviceConfig?store=123 | - Response status code is 200<br>- Response body contains a JSON array of exactly 100 device configs<br>- Each config contains all expected fields (SerialNo, AssociatedItem, Location, Template, Page, AssociatedTimeStamp, device_type, rec_crt_usr_id) |
+| A valid store ID (123) with less than 100 devices | A GET request is made to /GetDsDeviceConfig?store=123 | - Response status code is 200<br>- Response body contains a JSON array with all available device configs (less than 100)<br>- Each config contains all expected fields |
+| A valid store ID (123) with no devices | A GET request is made to /GetDsDeviceConfig?store=123 | - Response status code is 200<br>- Response body contains an empty JSON array |
+| An invalid store ID (-1) | A GET request is made to /GetDsDeviceConfig?store=-1 | - Response status code is 400<br>- Response body contains an error message about invalid store ID |
+| A non-existent store ID (999) | A GET request is made to /GetDsDeviceConfig?store=999 | - Response status code is 404<br>- Response body contains an error message about non-existent store |
+| No store ID provided | A GET request is made to /GetDsDeviceConfig without a store parameter | - Response status code is 400<br>- Response body contains an error message about missing required parameter |
+| A valid store ID (123) but the system is experiencing high load | A GET request is made to /GetDsDeviceConfig?store=123 | - Response status code is 200<br>- Response body contains the expected device configs<br>- Response time is within acceptable limits |
+| A valid store ID (0), if 0 is used to represent all stores | A GET request is made to /GetDsDeviceConfig?store=0 | - Response status code is 200<br>- Response body contains a JSON array of 100 device configs across all stores<br>- Each config includes a store identifier |
+| The user does not have proper authentication | A GET request is made to /GetDsDeviceConfig?store=123 without proper authentication | - Response status code is 401 (Unauthorized)<br>- Response body contains an error message about lacking proper authentication |
+| The user does not have proper authorization for the specified store | An authenticated GET request is made to /GetDsDeviceConfig?store=123 without proper authorization | - Response status code is 403 (Forbidden)<br>- Response body contains an error message about lacking proper authorization |

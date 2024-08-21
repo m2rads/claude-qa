@@ -1,0 +1,12 @@
+| Given | When | Then |
+|-------|------|------|
+| A valid store ID (123) with multiple failing ESLs | A GET request is made to /sign/failedesl/count/{store} | - Response status code is 200<br>- Response body contains a positive integer representing the count of failing ESLs<br>- Response time is significantly faster than retrieving the full list |
+| A valid store ID (123) with no failing ESLs | A GET request is made to /sign/failedesl/count/{store} | - Response status code is 200<br>- Response body contains the integer 0 |
+| An invalid store ID (-1) | A GET request is made to /sign/failedesl/count/-1 | - Response status code is 400<br>- Response body contains an error message about invalid store ID |
+| A non-existent store ID (999) | A GET request is made to /sign/failedesl/count/999 | - Response status code is 404<br>- Response body contains an error message about non-existent store |
+| A valid store ID (123) with a large number of failing ESLs | A GET request is made to /sign/failedesl/count/{store} | - Response status code is 200<br>- Response body contains the correct count of failing ESLs<br>- Response time remains fast despite the large count |
+| The system is under high load | A GET request is made to /sign/failedesl/count/{store} | - Response status code is 200<br>- Response body contains the correct count<br>- Response time remains significantly faster than retrieving the full list |
+| The user does not have proper authentication | A GET request is made to /sign/failedesl/count/{store} without proper authentication | - Response status code is 401 (Unauthorized)<br>- Response body contains an error message about lacking proper authentication |
+| The user does not have proper authorization for the specified store | An authenticated GET request is made to /sign/failedesl/count/{store} without proper authorization | - Response status code is 403 (Forbidden)<br>- Response body contains an error message about lacking proper authorization |
+| A valid store ID (0), if 0 is used to represent all stores | A GET request is made to /sign/failedesl/count/0 | - Response status code is 200<br>- Response body contains the total count of failing ESLs across all stores |
+| Multiple concurrent requests for the same store | Multiple simultaneous GET requests are made to /sign/failedesl/count/{store} | - All requests receive a 200 status code<br>- All responses contain the same count<br>- The system handles the concurrent requests efficiently |
