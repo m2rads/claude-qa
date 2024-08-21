@@ -1,9 +1,11 @@
 import os
 import requests
 import json
+from dotenv import load_dotenv
 
 def read_markdown_file(file_path):
-    with open(file_path, 'r') as file:
+    full_path = "md-files/" + file_path
+    with open(full_path, 'r') as file:
         content = file.read()
     return content
 
@@ -32,40 +34,71 @@ def call_claude_api(prompt, api_key):
     url = "https://api.anthropic.com/v1/messages"
     headers = {
         "Content-Type": "application/json",
-        "X-API-Key": api_key
+        "x-api-key": api_key,
+        "anthropic-version": "2023-06-01"
     }
     data = {
         "model": "claude-3-sonnet-20240229",
-        "messages": [{"role": "user", "content": prompt}]
+        "max_tokens": 4000,
+        "messages": [
+            {"role": "user", "content": prompt}
+        ]
     }
-    response = requests.post(url, headers=headers, json=data)
-    return response.json()
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"API Request failed: {e}")
+        print(f"Response status code: {e.response.status_code}")
+        print(f"Response body: {e.response.text}")
+        raise
 
 def process_claude_response(response):
-    # Extract the Groovy Spock test specification from Claude's response
-    return response['content'][0]['text']
+    if isinstance(response, dict) and 'content' in response:
+        return response['content'][0]['text']
+    elif isinstance(response, list) and len(response) > 0 and 'content' in response[0]:
+        return response[0]['content']
+    else:
+        print(f"Unexpected response structure: {json.dumps(response, indent=2)}")
+        raise ValueError("Unexpected response structure from Claude API")
 
 def main():
+    load_dotenv()
+
     markdown_file = input("Enter the path to your Markdown file: ")
-    api_key = os.environ.get("CLAUDE_API_KEY")
+    api_key = os.getenv("CLAUDE_API_KEY")
     
     if not api_key:
-        print("Please set the CLAUDE_API_KEY environment variable.")
+        print("Please set the CLAUDE_API_KEY in your .env file.")
         return
 
-    content = read_markdown_file(markdown_file)
-    data = parse_markdown_table(content)
-    prompt = generate_claude_prompt(data)
-    claude_response = call_claude_api(prompt, api_key)
-    groovy_test = process_claude_response(claude_response)
+    try:
+        content = read_markdown_file(markdown_file)
+        data = parse_markdown_table(content)
+        prompt = generate_claude_prompt(data)
+        
+        print("Sending request to Claude API...")
+        claude_response = call_claude_api(prompt, api_key)
+        
+        print("Processing Claude's response...")
+        groovy_test = process_claude_response(claude_response)
 
-    print("Generated Groovy Spock Test Specification:")
-    print(groovy_test)
+        print("Generated Groovy Spock Test Specification:")
+        print(groovy_test)
 
-    # Optionally, save the generated test to a file
-    with open("GeneratedGroovyTest.groovy", "w") as f:
-        f.write(groovy_test)
-    print("Test specification has been saved to GeneratedGroovyTest.groovy")
+        with open("GeneratedGroovyTest.groovy", "w") as f:
+            f.write(groovy_test)
+        print("Test specification has been saved to GeneratedGroovyTest.groovy")
+
+    except FileNotFoundError:
+        print(f"Error: The file '{markdown_file}' was not found.")
+    except requests.RequestException as e:
+        print(f"Error calling Claude API: {e}")
+    except ValueError as e:
+        print(f"Error processing Claude's response: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
     main()
